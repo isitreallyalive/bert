@@ -13,6 +13,7 @@ dependencies = [
 name = "bert-bot"
 version = "0.0.0"
 dependencies = [
+ "bert-base",
  "bert-core",
  "libloading",
  "thiserror",

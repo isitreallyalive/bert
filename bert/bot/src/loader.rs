@@ -18,19 +18,24 @@ pub enum ModuleError {
     ModuleNotFound(String),
     #[error("Module name mismatch: expected '{expected}', got '{actual}")]
     NameMismatch { expected: String, actual: String },
+    #[error("Module '{0}' is a static module and can not be reloaded")]
+    StaticModule(String),
 }
 
 struct LoadedModule {
-    path: PathBuf,
     module: Box<dyn Module>,
-    _lib: Library,
-    temp_path: PathBuf,
+
+    _lib: Option<Library>,
+    path: Option<PathBuf>,
+    temp_path: Option<PathBuf>,
 }
 
 impl Drop for LoadedModule {
     fn drop(&mut self) {
         // clean up temp path
-        let _ = fs::remove_file(&self.temp_path);
+        if let Some(temp_path) = &self.temp_path {
+            let _ = fs::remove_file(temp_path);
+        }
     }
 }
 
@@ -41,10 +46,26 @@ pub struct ModuleLoader {
 
 impl ModuleLoader {
     /// Load a module from a given path.
-    pub fn load<P: AsRef<Path>>(&mut self, path: P) -> Result<String, ModuleError> {
+    pub fn load<P: AsRef<Path>>(&mut self, path: P) -> Result<&Box<dyn Module>, ModuleError> {
         let (name, loaded_module) = self.load_module_from_path(path.as_ref())?;
         self.modules.insert(name.clone(), loaded_module);
-        Ok(name)
+        Ok(&self.modules[&name].module)
+    }
+
+    pub fn insert<M: Module + 'static>(&mut self, module: M) -> &Box<dyn Module> {
+        let name = module.name().to_string();
+        self.modules.insert(
+            name.clone(),
+            LoadedModule {
+                module: Box::new(module),
+
+                _lib: None,
+                path: None,
+                temp_path: None,
+            },
+        );
+
+        &self.modules[&name].module
     }
 
     /// Reload a module by name.
@@ -54,7 +75,8 @@ impl ModuleLoader {
             .modules
             .get(name)
             .map(|m| m.path.clone())
-            .ok_or_else(|| ModuleError::ModuleNotFound(name.to_string()))?;
+            .ok_or_else(|| ModuleError::ModuleNotFound(name.to_string()))?
+            .ok_or_else(|| ModuleError::StaticModule(name.to_string()))?;
 
         // keep the original module until we successfully load the new one
         let original = self.modules.remove(name).unwrap();
@@ -101,10 +123,11 @@ impl ModuleLoader {
         Ok((
             name,
             LoadedModule {
-                path: path.to_path_buf(),
                 module,
-                _lib: lib,
-                temp_path,
+
+                _lib: Some(lib),
+                path: Some(path.to_path_buf()),
+                temp_path: Some(temp_path),
             },
         ))
     }
