@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["bert/bot", "bert/core", "modules/base"]
+members = ["bert/bot", "bert/core", "bert/tui", "modules/base"]
 default-members = ["bert/bot"]
 
 [workspace.package]
@@ -11,8 +11,7 @@ edition = "2024"
 [workspace.dependencies]
 bert = { path = "bert/core", package = "bert-core" }
 bert-base = { path = "modules/base" }
+bert-tui = { path = "bert/tui" }
 libloading = "0.8.8"
 thiserror = "2.0.12"
 pastey = "0.1.0"
-tracing = "0.1.41"
-tracing-subscriber = "0.3.19"

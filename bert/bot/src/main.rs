@@ -1,20 +1,15 @@
 use loader::{ModuleError, ModuleLoader};
 
-#[macro_use]
-extern crate tracing;
-
 mod loader;
 
 fn main() -> Result<(), ModuleError> {
-    tracing_subscriber::fmt::init();
-
     let mut loader: ModuleLoader = ModuleLoader::default();
     #[cfg(feature = "base")]
     loader.insert(bert_base::Base);
 
     // list modules
     for module in loader.modules() {
-        info!(
+        println!(
             "Loaded module '{}' with commands: {:?}",
             module.name(),
             module
@@ -24,6 +19,9 @@ fn main() -> Result<(), ModuleError> {
                 .collect::<Vec<_>>()
         );
     }
+
+    #[cfg(feature = "tui")]
+    bert_tui::run()?;
 
     Ok(())
 }
