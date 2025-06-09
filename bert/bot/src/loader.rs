@@ -18,23 +18,36 @@ pub enum ModuleError {
     ModuleNotFound(String),
     #[error("Module name mismatch: expected '{expected}', got '{actual}")]
     NameMismatch { expected: String, actual: String },
-    #[error("Module '{0}' is a static module and can not be reloaded")]
-    StaticModule(String),
+    #[error("Module '{0}' is not dynamic and can not be reloaded")]
+    NoReload(String),
+}
+
+enum ModuleSource {
+    Crate,
+    Library {
+        _lib: Library,
+        path: PathBuf,
+        temp_path: PathBuf,
+    },
 }
 
 struct LoadedModule {
+    /// The actual module.
     module: Box<dyn Module>,
-
-    _lib: Option<Library>,
-    path: Option<PathBuf>,
-    temp_path: Option<PathBuf>,
+    /// The source that the module came from.
+    ///
+    /// NOTE: this has to come after `module` for [ModuleSource::Library::_lib]!
+    source: ModuleSource,
 }
 
 impl Drop for LoadedModule {
     fn drop(&mut self) {
-        // clean up temp path
-        if let Some(temp_path) = &self.temp_path {
-            let _ = fs::remove_file(temp_path);
+        match &self.source {
+            ModuleSource::Library { temp_path, .. } => {
+                // clean up temp path
+                let _ = fs::remove_file(temp_path);
+            }
+            _ => {}
         }
     }
 }
@@ -57,11 +70,8 @@ impl ModuleLoader {
         self.modules.insert(
             name.clone(),
             LoadedModule {
+                source: ModuleSource::Crate,
                 module: Box::new(module),
-
-                _lib: None,
-                path: None,
-                temp_path: None,
             },
         );
 
@@ -71,12 +81,16 @@ impl ModuleLoader {
     /// Reload a module by name.
     pub fn reload(&mut self, name: &str) -> Result<String, ModuleError> {
         // check if module exists first
-        let path = self
-            .modules
-            .get(name)
-            .map(|m| m.path.clone())
-            .ok_or_else(|| ModuleError::ModuleNotFound(name.to_string()))?
-            .ok_or_else(|| ModuleError::StaticModule(name.to_string()))?;
+        let path = {
+            let module = self
+                .modules
+                .get(name)
+                .ok_or_else(|| ModuleError::ModuleNotFound(name.to_string()))?;
+            match &module.source {
+                ModuleSource::Library { path, .. } => path.clone(),
+                ModuleSource::Crate => return Err(ModuleError::NoReload(name.to_string())),
+            }
+        };
 
         // keep the original module until we successfully load the new one
         let original = self.modules.remove(name).unwrap();
@@ -124,10 +138,11 @@ impl ModuleLoader {
             name,
             LoadedModule {
                 module,
-
-                _lib: Some(lib),
-                path: Some(path.to_path_buf()),
-                temp_path: Some(temp_path),
+                source: ModuleSource::Library {
+                    _lib: lib,
+                    path: path.to_path_buf(),
+                    temp_path,
+                },
             },
         ))
     }
