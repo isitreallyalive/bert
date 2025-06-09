@@ -7,8 +7,8 @@ fn main() -> Result<(), ModuleError> {
 
     // load base module
     // todo: module registry
-    let base = loader.load("target/debug/libbert_base.so")?;
-    // let base = loader.insert(bert_base::Base);
+    // let base = loader.load("target/debug/libbert_base.so")?;
+    let base = loader.insert(bert_base::Base);
     println!(
         "{:?} {:?}",
         base.name(),

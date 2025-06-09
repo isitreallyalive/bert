@@ -13,3 +13,4 @@ bert = { path = "bert/core", package = "bert-core" }
 bert-base = { path = "modules/base" }
 libloading = "0.8.8"
 thiserror = "2.0.12"
+pastey = "0.1.0"

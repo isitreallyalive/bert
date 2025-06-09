@@ -6,6 +6,6 @@ edition.workspace = true
 
 [dependencies]
 bert.workspace = true
-bert-base = { workspace = true }
+bert-base.workspace = true
 libloading.workspace = true
-thiserror = { workspace = true }
+thiserror.workspace = true

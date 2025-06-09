@@ -22,6 +22,9 @@ dependencies = [
 [[package]]
 name = "bert-core"
 version = "0.0.0"
+dependencies = [
+ "pastey",
+]
 
 [[package]]
 name = "cfg-if"
@@ -38,6 +41,12 @@ dependencies = [
  "cfg-if",
  "windows-targets",
 ]
+
+[[package]]
+name = "pastey"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3a8cb46bdc156b1c90460339ae6bfd45ba0394e5effbaa640badb4987fdc261"
 
 [[package]]
 name = "proc-macro2"
