@@ -5,3 +5,6 @@ publish.workspace = true
 edition.workspace = true
 
 [dependencies]
+bert.workspace = true
+libloading.workspace = true
+thiserror = { workspace = true }

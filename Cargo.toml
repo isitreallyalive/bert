@@ -10,3 +10,5 @@ edition = "2024"
 
 [workspace.dependencies]
 bert = { path = "bert/core", package = "bert-core" }
+libloading = "0.8.8"
+thiserror = "2.0.12"
