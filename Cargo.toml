@@ -14,3 +14,5 @@ bert-base = { path = "modules/base" }
 libloading = "0.8.8"
 thiserror = "2.0.12"
 pastey = "0.1.0"
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"

@@ -1,19 +1,29 @@
 use loader::{ModuleError, ModuleLoader};
 
+#[macro_use]
+extern crate tracing;
+
 mod loader;
 
 fn main() -> Result<(), ModuleError> {
-    let mut loader = ModuleLoader::default();
+    tracing_subscriber::fmt::init();
 
-    // load base module
-    // todo: module registry
-    // let base = loader.load("target/debug/libbert_base.so")?;
-    let base = loader.insert(bert_base::Base);
-    println!(
-        "{:?} {:?}",
-        base.name(),
-        base.commands().iter().map(|c| c.name()).collect::<Vec<_>>()
-    );
+    let mut loader: ModuleLoader = ModuleLoader::default();
+    #[cfg(feature = "base")]
+    loader.insert(bert_base::Base);
+
+    // list modules
+    for module in loader.modules() {
+        info!(
+            "Loaded module '{}' with commands: {:?}",
+            module.name(),
+            module
+                .commands()
+                .iter()
+                .map(|c| c.name())
+                .collect::<Vec<_>>()
+        );
+    }
 
     Ok(())
 }

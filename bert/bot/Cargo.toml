@@ -4,8 +4,14 @@ version.workspace = true
 publish.workspace = true
 edition.workspace = true
 
+[features]
+default = ["base"]
+base = ["dep:bert-base"]
+
 [dependencies]
 bert.workspace = true
-bert-base.workspace = true
+bert-base = { workspace = true, optional = true }
 libloading.workspace = true
 thiserror.workspace = true
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

@@ -42,12 +42,9 @@ struct LoadedModule {
 
 impl Drop for LoadedModule {
     fn drop(&mut self) {
-        match &self.source {
-            ModuleSource::Library { temp_path, .. } => {
-                // clean up temp path
-                let _ = fs::remove_file(temp_path);
-            }
-            _ => {}
+        if let ModuleSource::Library { temp_path, .. } = &self.source {
+            // clean up temp path
+            let _ = fs::remove_file(temp_path);
         }
     }
 }
@@ -59,13 +56,14 @@ pub struct ModuleLoader {
 
 impl ModuleLoader {
     /// Load a module from a given path.
-    pub fn load<P: AsRef<Path>>(&mut self, path: P) -> Result<&Box<dyn Module>, ModuleError> {
+    pub fn load<P: AsRef<Path>>(&mut self, path: P) -> Result<&dyn Module, ModuleError> {
         let (name, loaded_module) = self.load_module_from_path(path.as_ref())?;
         self.modules.insert(name.clone(), loaded_module);
-        Ok(&self.modules[&name].module)
+        Ok(&*self.modules[&name].module)
     }
 
-    pub fn insert<M: Module + 'static>(&mut self, module: M) -> &Box<dyn Module> {
+    /// Insert a module directly, without loading from a path.
+    pub fn insert<M: Module + 'static>(&mut self, module: M) -> &dyn Module {
         let name = module.name().to_string();
         self.modules.insert(
             name.clone(),
@@ -75,7 +73,11 @@ impl ModuleLoader {
             },
         );
 
-        &self.modules[&name].module
+        &*self.modules[&name].module
+    }
+
+    pub fn modules(&self) -> impl Iterator<Item = &dyn Module> {
+        self.modules.values().map(|m| &*m.module)
     }
 
     /// Reload a module by name.
@@ -93,6 +95,7 @@ impl ModuleLoader {
         };
 
         // keep the original module until we successfully load the new one
+        // unwrap is okay here because we checked existence above
         let original = self.modules.remove(name).unwrap();
 
         // try to load the new module
