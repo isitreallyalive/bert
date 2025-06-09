@@ -1,0 +1,11 @@
+[workspace]
+resolver = "3"
+members = ["bert/bot", "bert/core", "modules/base"]
+default-members = ["bert/bot"]
+
+[workspace.package]
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[workspace.dependencies]
