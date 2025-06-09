@@ -3,5 +3,3 @@ name = "bert-core"
 version.workspace = true
 publish.workspace = true
 edition.workspace = true
-
-[dependencies]
