@@ -15,3 +15,7 @@ bert-tui = { path = "bert/tui" }
 libloading = "0.8.8"
 thiserror = "2.0.12"
 pastey = "0.1.0"
+ratatui = "0.29.0"
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+tui-logger = "0.17.3"

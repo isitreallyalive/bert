@@ -15,3 +15,5 @@ bert-base = { workspace = true, optional = true }
 bert-tui = { workspace = true, optional = true }
 libloading.workspace = true
 thiserror.workspace = true
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

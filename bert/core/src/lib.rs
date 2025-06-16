@@ -1,8 +1,8 @@
+pub use pastey::paste;
+
 pub mod prelude {
     pub use crate::{Command, Module, create_module};
 }
-
-pub use pastey::paste;
 
 /// A command that can be executed.
 pub trait Command {
